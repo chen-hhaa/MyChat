@@ -76,6 +76,24 @@ bool UserManager::delete_student(int user_id)
 	return true;
 }
 
+bool UserManager::isExist(string &user_name)
+{
+	char sql[1024];
+	sprintf(sql, "SELECT * FROM user_info where user_name='%s'", user_name.c_str());
+	if (mysql_query(con, sql))
+	{
+		fprintf(stderr, "Failed to get data : Error: %s\n", mysql_error(con));
+		return {};
+	}
+	MYSQL_RES* res = mysql_store_result(con);
+	MYSQL_ROW row;
+
+	if((row = mysql_fetch_row(res))){
+		return true;
+	}
+    return false;
+}
+
 vector<User> UserManager::get_user_info(string condition)
 {
 	vector<User> stuList;

@@ -38,6 +38,7 @@ public:
 	bool insert_student(User& t);
 	bool update_student(User& t);
 	bool delete_student(int user_id); // 通过id删除
+	bool isExist(string &user_name); //判断库中是否已经存在user_name
 	vector<User> get_user_info(string condition = "");
 	string get_password(string &user_name);
 private:

@@ -91,6 +91,43 @@ string loginInfoProc(string & message, int sockfd){
     return msg;
 }
 
+//注册信息处理
+string registerInfoProc(string & message, int sockfd){
+    // 提取用户名和密码信息
+    string gbk_user_name, user_name, user_pwd;
+    regex p("\\[\\d{1}\\]\\[(.*)\\]\\[(.*)\\]"); // C++11 需要使用两个"\\"符号
+    smatch matchRes;
+
+    if(regex_match(message, matchRes, p)){
+        gbk_user_name = matchRes[1].str();
+        Gbk2Utf(gbk_user_name, user_name);
+        cout << "user_name:" << user_name << endl;
+        user_pwd = matchRes[2].str();
+        cout << "user_pwd:" << user_pwd << endl; 
+    }
+    else {
+        cout << "Error: 用户名和密码解析失败！" << endl;
+    }
+    // 查询数据库
+    string msg = "";
+    if (user_manager->isExist(user_name)) {
+        msg = "The user already exists!";
+    }
+    else{
+        clients[sockfd].name=gbk_user_name;
+        User t;
+        t.user_name = user_name;
+        t.password = user_pwd;
+        if(user_manager->insert_student(t)){
+            msg = "ok";
+            clients[sockfd].name=gbk_user_name;
+        }
+        else msg = "User creation failure! ";
+    }
+    write(sockfd, msg.c_str(), msg.size());
+    return msg;
+}
+
 int main() {
     //数据库连接
     user_manager = db_connect();
@@ -192,10 +229,10 @@ int main() {
                     else if(message[1] == '2') // 注册信息
                     {
                         // TODO
+                        registerInfoProc(message, fd);
                     }
                     else if(message[1] == '3') // 聊天信息
                     {
-                        // TODO
                         message = message.substr(3);
                         string name = clients[fd].name;
                         // 广播消息
